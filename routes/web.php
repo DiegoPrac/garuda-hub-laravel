@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProjectController;
 
 // Halaman utama
 Route::get('/', function () {
@@ -30,3 +31,10 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
+
+
+
+// CRUD Proyek GarudaHub
+// Hanya pengguna login yang dapat mengakses proyek
+Route::resource('projects', ProjectController::class)
+    ->middleware('auth');
