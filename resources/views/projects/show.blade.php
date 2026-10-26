@@ -103,8 +103,7 @@
 
 
 
-@if(auth()->user()->role === 'klien'
-    && (int) $project->client_id === auth()->id())
+@if(auth()->user()->can('update', $project))
 
     <a href="{{ route('projects.edit', $project) }}"
        class="btn">
@@ -214,8 +213,7 @@
 
 
 {{-- Daftar penawaran khusus pemilik proyek --}}
-@if(auth()->user()->role === 'klien'
-    && (int) $project->client_id === auth()->id())
+@if(auth()->user()->can('selectWinner', $project))
 
     <hr>
 

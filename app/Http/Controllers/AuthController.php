@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -21,12 +21,12 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'nama' => 'required|string|max:100',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:klien,developer',
         ]);
 
-        $user = User::create([
+        $user = new User([
             'nama' => $data['nama'],
             'email' => $data['email'],
             'password' => $data['password'],
@@ -52,7 +52,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required|string',
         ]);
 
         if (Auth::attempt($credentials)) {
