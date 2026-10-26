@@ -36,6 +36,46 @@ class GarudaHubRegressionTest extends TestCase
         ]);
     }
 
+    public function test_form_diganti_status_setelah_developer_menawar(): void
+    {
+        $project = $this->buatProyek(User::factory()->create(['role' => 'klien']));
+        $developer = User::factory()->create(['role' => 'developer']);
+
+        $this->actingAs($developer)->get(route('projects.show', $project))
+            ->assertOk()->assertSee('Kirim Penawaran');
+        $this->post(route('bids.store', $project), $this->penawaran())
+            ->assertRedirect(route('projects.show', $project));
+        $this->get(route('projects.show', $project))
+            ->assertOk()->assertSee('Penawaran Kamu')->assertSee('Menunggu keputusan klien')
+            ->assertSee('Rp150')->assertSee('7 hari')->assertSee($this->penawaran()['proposal'])
+            ->assertDontSee('Kirim Penawaran')->assertDontSee('name="harga"', false);
+
+        $developerLain = User::factory()->create(['role' => 'developer']);
+        $this->actingAs($developerLain)->get(route('projects.show', $project))
+            ->assertOk()->assertSee('Kirim Penawaran')->assertDontSee($this->penawaran()['proposal']);
+    }
+
+    public function test_status_penawaran_mengikuti_hasil_dan_batas_lelang(): void
+    {
+        $this->freezeTime();
+        $project = $this->buatProyek(User::factory()->create(['role' => 'klien']));
+        $bid = $this->buatBid($project);
+        $this->actingAs($bid->developer);
+        $this->travelTo($project->batas_lelang);
+        $this->get(route('projects.show', $project))->assertOk()
+            ->assertSee('Lelang berakhir, belum ada pemenang')->assertDontSee('Kirim Penawaran');
+
+        $winner = $this->buatBid($project);
+        $winner->is_winner = true;
+        $winner->save();
+        $project->status = 'ditutup';
+        $project->save();
+        $this->get(route('projects.show', $project))->assertOk()
+            ->assertSee('Tidak terpilih')->assertDontSee('Kirim Penawaran');
+        $this->actingAs($winner->developer)->get(route('projects.show', $project))->assertOk()
+            ->assertSee('Terpilih sebagai pemenang')->assertDontSee('Kirim Penawaran');
+    }
+
     public function test_policy_membatasi_peran_dan_kepemilikan(): void
     {
         $pemilik = User::factory()->create(['role' => 'klien']);
