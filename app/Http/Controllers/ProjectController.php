@@ -54,7 +54,14 @@ class ProjectController extends Controller
             $project->load('bids.developer');
         }
 
-        return view('projects.show', compact('project'));
+        $myBid = null;
+        if (Gate::allows('bid', $project)) {
+            $myBid = $project->bids()->where('developer_id', auth()->id())->first();
+        }
+
+        $hasWinner = $project->bids()->where('is_winner', true)->exists();
+
+        return view('projects.show', compact('project', 'myBid', 'hasWinner'));
     }
 
     // Menampilkan form edit

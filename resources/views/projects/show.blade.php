@@ -143,8 +143,29 @@
 @endif
 
 {{-- Form khusus Developer --}}
-@if(auth()->user()->role === 'developer'
+@if($myBid)
+    <hr>
+    <section aria-labelledby="my-bid-title" class="info">
+        <h2 id="my-bid-title">Penawaran Kamu</h2>
+        <p>Kamu sudah mengirim penawaran untuk proyek ini.</p>
+        <p><strong>Harga Penawaran:</strong> Rp{{ number_format($myBid->harga, 0, ',', '.') }}</p>
+        <p><strong>Durasi:</strong> {{ $myBid->durasi }} hari</p>
+        <p><strong>Proposal:</strong> {{ $myBid->proposal }}</p>
+        <p><strong>Status Penawaran:</strong>
+            @if($myBid->is_winner)
+                Terpilih sebagai pemenang
+            @elseif($hasWinner)
+                Tidak terpilih
+            @elseif($project->status !== 'terbuka' || !$project->batas_lelang->isFuture())
+                Lelang berakhir, belum ada pemenang
+            @else
+                Menunggu keputusan klien
+            @endif
+        </p>
+    </section>
+@elseif(auth()->user()->can('bid', $project)
     && $project->status === 'terbuka'
+    && !$hasWinner
     && \Illuminate\Support\Carbon::parse($project->batas_lelang)->isFuture())
 
     <hr>
