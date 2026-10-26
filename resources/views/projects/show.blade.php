@@ -212,6 +212,55 @@
         Kembali ke Daftar Proyek
     </a>
 
+
+{{-- Daftar penawaran khusus pemilik proyek --}}
+@if(auth()->user()->role === 'klien'
+    && (int) $project->client_id === auth()->id())
+
+    <hr>
+
+    <h2>Daftar Penawaran Developer</h2>
+    <p>Berikut penawaran yang masuk untuk proyek ini.</p>
+
+    @forelse($project->bids as $bid)
+        <div style="background:#f3f4f6;
+                    padding:18px;
+                    border-radius:8px;
+                    margin:15px 0;">
+
+            <p>
+                <strong>Developer:</strong>
+                {{ $bid->developer?->nama ?? 'Tidak diketahui' }}
+            </p>
+
+            <p>
+                <strong>Harga Penawaran:</strong>
+                Rp{{ number_format($bid->harga, 0, ',', '.') }}
+            </p>
+
+            <p>
+                <strong>Durasi:</strong>
+                {{ $bid->durasi }} hari
+            </p>
+
+            <p>
+                <strong>Proposal:</strong>
+                {{ $bid->proposal }}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                {{ $bid->is_winner ? 'Terpilih' : 'Belum dipilih' }}
+            </p>
+
+        </div>
+    @empty
+        <p>Belum ada penawaran untuk proyek ini.</p>
+    @endforelse
+
+@endif
+
+
 </div>
 
 </body>
