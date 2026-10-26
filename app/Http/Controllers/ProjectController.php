@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
     // Menampilkan daftar semua proyek
-    public function index()
+    public function index(): View
     {
         $projects = Project::with('client')
             ->latest()
@@ -18,17 +21,17 @@ class ProjectController extends Controller
     }
 
     // Menampilkan form tambah proyek
-    public function create()
+    public function create(): View
     {
-        abort_unless(auth()->user()?->role === 'klien', 403);
+        Gate::authorize('create', Project::class);
 
         return view('projects.create');
     }
 
     // Menyimpan proyek baru
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        abort_unless(auth()->user()?->role === 'klien', 403);
+        Gate::authorize('create', Project::class);
 
         $data = $this->validateProject($request);
 
@@ -43,14 +46,11 @@ class ProjectController extends Controller
     }
 
     // Menampilkan detail proyek
-    public function show(Project $project)
+    public function show(Project $project): View
     {
         $project->load('client');
 
-        if (
-            auth()->user()->role === 'klien' &&
-            (int) $project->client_id === (int) auth()->id()
-        ) {
+        if (Gate::allows('update', $project)) {
             $project->load('bids.developer');
         }
 
@@ -58,17 +58,17 @@ class ProjectController extends Controller
     }
 
     // Menampilkan form edit
-    public function edit(Project $project)
+    public function edit(Project $project): View
     {
-        $this->checkOwner($project);
+        Gate::authorize('update', $project);
 
         return view('projects.edit', compact('project'));
     }
 
     // Menyimpan perubahan proyek
-    public function update(Request $request, Project $project)
+    public function update(Request $request, Project $project): RedirectResponse
     {
-        $this->checkOwner($project);
+        Gate::authorize('update', $project);
 
         $data = $this->validateProject($request);
 
@@ -80,9 +80,9 @@ class ProjectController extends Controller
     }
 
     // Menghapus proyek
-    public function destroy(Project $project)
+    public function destroy(Project $project): RedirectResponse
     {
-        $this->checkOwner($project);
+        Gate::authorize('delete', $project);
 
         $project->delete();
 
@@ -102,16 +102,5 @@ class ProjectController extends Controller
             'budget_max' => 'required|integer|gte:budget_min',
             'batas_lelang' => 'required|date|after_or_equal:today',
         ]);
-    }
-
-    // Memastikan proyek milik klien yang login
-    private function checkOwner(Project $project): void
-    {
-        abort_unless(
-            auth()->user()?->role === 'klien'
-            && $project->client_id === auth()->id(),
-            403,
-            'Anda tidak memiliki akses ke proyek ini.'
-        );
     }
 }

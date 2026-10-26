@@ -4,88 +4,85 @@ namespace App\Http\Controllers;
 
 use App\Models\Bid;
 use App\Models\Project;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class BidController extends Controller
 {
     // Developer mengirim penawaran
-    public function store(Request $request, Project $project)
+    public function store(Request $request, Project $project): RedirectResponse
     {
-        // Hanya developer yang boleh memberikan penawaran
-        abort_unless(
-            auth()->user()?->role === 'developer',
-            403,
-            'Hanya developer yang boleh menawar.'
-        );
+        Gate::authorize('bid', $project);
 
-        // Pastikan proyek masih terbuka
-        if ($project->status !== 'terbuka') {
-            return back()->with(
-                'error',
-                'Proyek ini sudah tidak menerima penawaran.'
-            );
-        }
+        return DB::transaction(function () use ($request, $project): RedirectResponse {
+            // Semua penawaran dan pemilihan pemenang mengunci proyek yang sama.
+            $project = Project::query()->lockForUpdate()->findOrFail($project->id);
+            Gate::authorize('bid', $project);
 
-        // Periksa batas waktu lelang
-        if (now()->greaterThanOrEqualTo($project->batas_lelang)) {
-            return back()->with(
-                'error',
-                'Batas waktu lelang sudah berakhir.'
-            );
-        }
+            // Pastikan proyek masih terbuka
+            if ($project->status !== 'terbuka') {
+                return back()->with(
+                    'error',
+                    'Proyek ini sudah tidak menerima penawaran.'
+                );
+            }
 
-        // Tidak boleh menawar jika pemenang sudah dipilih
-        if ($project->bids()->where('is_winner', true)->exists()) {
-            return back()->with(
-                'error',
-                'Pemenang proyek ini sudah ditentukan.'
-            );
-        }
+            // Periksa batas waktu lelang
+            if (now()->greaterThanOrEqualTo($project->batas_lelang)) {
+                return back()->with(
+                    'error',
+                    'Batas waktu lelang sudah berakhir.'
+                );
+            }
 
-        // Satu developer hanya boleh menawar sekali
-        $sudahMenawar = Bid::where('project_id', $project->id)
-            ->where('developer_id', auth()->id())
-            ->exists();
+            // Tidak boleh menawar jika pemenang sudah dipilih
+            if ($project->bids()->where('is_winner', true)->exists()) {
+                return back()->with(
+                    'error',
+                    'Pemenang proyek ini sudah ditentukan.'
+                );
+            }
 
-        if ($sudahMenawar) {
-            return back()->with(
-                'error',
-                'Kamu sudah memberikan penawaran pada proyek ini.'
-            );
-        }
+            // Satu developer hanya boleh menawar sekali
+            $sudahMenawar = Bid::where('project_id', $project->id)
+                ->where('developer_id', auth()->id())
+                ->exists();
 
-        // Validasi data penawaran
-        $data = $request->validate([
-            'harga' => 'required|integer|min:1',
-            'durasi' => 'required|integer|min:1',
-            'proposal' => 'required|string|min:10|max:3000',
-        ]);
+            if ($sudahMenawar) {
+                return back()->with(
+                    'error',
+                    'Kamu sudah memberikan penawaran pada proyek ini.'
+                );
+            }
 
-        // Simpan penawaran menggunakan Eloquent
-        Bid::create([
-            'project_id' => $project->id,
-            'developer_id' => auth()->id(),
-            'harga' => $data['harga'],
-            'durasi' => $data['durasi'],
-            'proposal' => $data['proposal'],
-        ]);
+            // Validasi data penawaran
+            $data = $request->validate([
+                'harga' => 'required|integer|min:1',
+                'durasi' => 'required|integer|min:1|max:4294967295',
+                'proposal' => 'required|string|min:10|max:3000',
+            ]);
 
-        return redirect()
-            ->route('projects.show', $project)
-            ->with('success', 'Penawaran berhasil dikirim!');
+            // Simpan penawaran menggunakan Eloquent
+            Bid::create([
+                'project_id' => $project->id,
+                'developer_id' => auth()->id(),
+                'harga' => $data['harga'],
+                'durasi' => $data['durasi'],
+                'proposal' => $data['proposal'],
+            ]);
+
+            return redirect()
+                ->route('projects.show', $project)
+                ->with('success', 'Penawaran berhasil dikirim!');
+        }, 3);
     }
 
     // Klien memilih pemenang lelang
-    public function selectWinner(Project $project, Bid $bid)
+    public function selectWinner(Project $project, Bid $bid): RedirectResponse
     {
-        // Hanya pemilik proyek yang boleh memilih pemenang
-        abort_unless(
-            auth()->user()?->role === 'klien' &&
-            (int) $project->client_id === (int) auth()->id(),
-            403,
-            'Anda tidak memiliki akses.'
-        );
+        Gate::authorize('selectWinner', $project);
 
         // Pastikan penawaran berasal dari proyek yang benar
         abort_unless(
@@ -99,6 +96,9 @@ class BidController extends Controller
             $lockedProject = Project::query()
                 ->lockForUpdate()
                 ->findOrFail($project->id);
+
+            Gate::authorize('selectWinner', $lockedProject);
+            $lockedBid = $lockedProject->bids()->lockForUpdate()->findOrFail($bid->id);
 
             // Proyek harus masih terbuka
             abort_unless(
@@ -119,16 +119,13 @@ class BidController extends Controller
             );
 
             // Tandai developer yang dipilih sebagai pemenang
-            $lockedProject->bids()
-                ->whereKey($bid->id)
-                ->update([
-                    'is_winner' => true,
-                ]);
+            $lockedBid->is_winner = true;
+            $lockedBid->save();
 
             // Otomatis tutup lelang setelah pemenang dipilih
             $lockedProject->status = 'ditutup';
             $lockedProject->save();
-        });
+        }, 3);
 
         return redirect()
             ->route('projects.show', $project)
