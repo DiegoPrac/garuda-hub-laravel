@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -12,29 +13,39 @@ return new class extends Migration
         Schema::create('bids', function (Blueprint $table) {
             $table->id();
 
+            // Relasi penawaran dengan proyek
             $table->foreignId('project_id')
                 ->constrained('projects')
                 ->cascadeOnDelete();
 
+            // Relasi penawaran dengan developer
             $table->foreignId('developer_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
 
+            // Informasi penawaran
             $table->unsignedBigInteger('harga');
             $table->unsignedInteger('durasi');
             $table->text('proposal');
 
+            // Penanda pemenang lelang
             $table->boolean('is_winner')->default(false);
 
             $table->timestamps();
 
+            // Satu developer hanya boleh menawar sekali
+            // pada proyek yang sama
             $table->unique(['project_id', 'developer_id']);
         });
 
-        DB::statement(
-            'ALTER TABLE bids ADD CONSTRAINT chk_bids_nilai
-             CHECK (harga > 0 AND durasi > 0)'
-        );
+        // CHECK constraint khusus database MySQL
+        // Dilewati ketika testing menggunakan SQLite
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement(
+                'ALTER TABLE bids ADD CONSTRAINT chk_bids_nilai
+                 CHECK (harga > 0 AND durasi > 0)'
+            );
+        }
     }
 
     public function down(): void
