@@ -102,10 +102,23 @@
                 dan developer dalam pengerjaan proyek IT.
             </p>
 
-            <p>
-                Fitur manajemen proyek dan penawaran
-                akan tersedia pada tahap berikutnya.
-            </p>
+
+<p>
+    Silakan lihat daftar proyek IT yang tersedia
+    dan ajukan penawaran sesuai keahlianmu.
+</p>
+
+<a href="{{ route('projects.index') }}"
+   style="display:inline-block;
+          background:#2563eb;
+          color:white;
+          padding:12px 20px;
+          border-radius:5px;
+          text-decoration:none;
+          margin-top:10px;">
+    Lihat Daftar Proyek
+</a>
+
         @else
             <h1>Selamat Datang di GarudaHub</h1>
 

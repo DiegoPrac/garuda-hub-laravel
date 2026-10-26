@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\BidController;
 
 // Halaman utama
 Route::get('/', function () {
@@ -38,3 +39,11 @@ Route::post('/logout', [AuthController::class, 'logout'])
 // Hanya pengguna login yang dapat mengakses proyek
 Route::resource('projects', ProjectController::class)
     ->middleware('auth');
+
+
+
+// Developer mengirim penawaran untuk proyek
+Route::post('/projects/{project}/bids',
+    [BidController::class, 'store'])
+    ->middleware('auth')
+    ->name('bids.store');

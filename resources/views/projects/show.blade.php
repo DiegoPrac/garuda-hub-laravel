@@ -130,6 +130,83 @@
 @endif
 
 
+{{-- Notifikasi penawaran --}}
+@if(session('success'))
+    <p style="background:#d1fae5; padding:12px;">
+        {{ session('success') }}
+    </p>
+@endif
+
+@if(session('error'))
+    <p style="background:#fee2e2; padding:12px;">
+        {{ session('error') }}
+    </p>
+@endif
+
+{{-- Form khusus Developer --}}
+@if(auth()->user()->role === 'developer'
+    && $project->status === 'terbuka'
+    && \Illuminate\Support\Carbon::parse($project->batas_lelang)->isFuture())
+
+    <hr>
+
+    <h2>Ajukan Penawaran</h2>
+    <p>Isi penawaran untuk mengerjakan proyek ini.</p>
+
+    <form action="{{ route('bids.store', $project) }}"
+          method="POST">
+
+        @csrf
+
+        <div class="info">
+            <label>Harga Penawaran (Rp)</label>
+            <input type="number"
+                   name="harga"
+                   value="{{ old('harga') }}"
+                   min="1"
+                   required
+                   style="width:100%; padding:10px; box-sizing:border-box;">
+            @error('harga')
+                <p style="color:red;">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="info">
+            <label>Durasi Pengerjaan (Hari)</label>
+            <input type="number"
+                   name="durasi"
+                   value="{{ old('durasi') }}"
+                   min="1"
+                   required
+                   style="width:100%; padding:10px; box-sizing:border-box;">
+            @error('durasi')
+                <p style="color:red;">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="info">
+            <label>Proposal Penawaran</label>
+            <textarea name="proposal"
+                      minlength="10"
+                      maxlength="3000"
+                      required
+                      style="width:100%; padding:10px; height:110px; box-sizing:border-box;">{{ old('proposal') }}</textarea>
+            @error('proposal')
+                <p style="color:red;">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <button type="submit"
+                style="background:#2563eb; color:white;
+                       padding:12px 18px; border:none;
+                       border-radius:5px; cursor:pointer;">
+            Kirim Penawaran
+        </button>
+
+    </form>
+
+@endif
+
 
     <a href="{{ route('projects.index') }}" class="btn">
         Kembali ke Daftar Proyek
