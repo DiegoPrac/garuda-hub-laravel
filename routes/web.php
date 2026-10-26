@@ -1,7 +1,32 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 
+// Halaman utama
 Route::get('/', function () {
     return view('welcome');
+})->name('home');
+
+// Halaman untuk pengguna yang belum login
+Route::middleware('guest')->group(function () {
+
+    // Registrasi
+    Route::get('/register', [AuthController::class, 'showRegister'])
+        ->name('register');
+
+    Route::post('/register', [AuthController::class, 'register'])
+        ->name('register.store');
+
+    // Login
+    Route::get('/login', [AuthController::class, 'showLogin'])
+        ->name('login');
+
+    Route::post('/login', [AuthController::class, 'login'])
+        ->name('login.attempt');
 });
+
+// Logout hanya untuk pengguna yang sudah login
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
