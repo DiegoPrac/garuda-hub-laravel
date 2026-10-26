@@ -1,58 +1,137 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GarudaHub — Refactoring PHP Native ke Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Proyek praktikum **KST1407 Pemrograman Berbasis Web**. GarudaHub adalah aplikasi lelang proyek IT yang mempertemukan klien dan developer. Proyek ini dibuat dengan merancang ulang aplikasi PHP Native menjadi aplikasi **Laravel berbasis MVC** dan menggunakan **Eloquent ORM** untuk mengelola database.
 
-## About Laravel
+- Pengembang: Diego Valentino Augusta
+- Program Studi: Teknologi Informasi, Universitas Jember
+- Referensi studi kasus: [garudaHub PHP Native oleh diksy](https://github.com/diksy/garudaHub)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur yang diimplementasikan
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Registrasi, login, dan logout dengan peran **klien** serta **developer**.
+- Klien dapat menambahkan, melihat, mengubah, dan menghapus proyek miliknya.
+- Pengguna yang login dapat melihat daftar serta detail proyek.
+- Developer dapat mengirim penawaran berupa harga, durasi, dan proposal.
+- Setiap developer hanya dapat mengirim satu penawaran untuk proyek yang sama.
+- Klien dapat melihat penawaran yang masuk dan memilih pemenang.
+- Setelah pemenang dipilih, status proyek otomatis berubah menjadi **ditutup**.
+- Validasi formulir, pembatasan akses berdasarkan peran, CSRF protection, dan relasi database.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Catatan ruang lingkup:** Referensi PHP Native juga memiliki fitur pencarian proyek, dashboard per peran, dan panel admin. Fitur-fitur tersebut **belum direplikasi sepenuhnya** pada versi Laravel ini.
 
-## Learning Laravel
+## Teknologi
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.3 atau lebih baru
+- Laravel 13
+- MySQL / MariaDB
+- Eloquent ORM, Blade, dan Laravel Migration
+- Composer, Git, dan GitHub
+- Laragon untuk menjalankan aplikasi secara lokal (opsional)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Struktur MVC
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+| Bagian | Lokasi | Fungsi |
+| --- | --- | --- |
+| Model | `app/Models/User.php`, `Project.php`, `Bid.php` | Relasi dan pengolahan data menggunakan Eloquent |
+| Controller | `app/Http/Controllers/` | Proses login, CRUD proyek, penawaran, dan pemilihan pemenang |
+| View | `resources/views/` | Tampilan halaman menggunakan Blade |
+| Routes | `routes/web.php` | Pemetaan URL ke controller |
+| Migration | `database/migrations/` | Membuat struktur dan relasi tabel database |
 
-## Agentic Development
+## Rancangan database
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Tiga tabel utama yang digunakan:
 
-```bash
-composer require laravel/boost --dev
+1. **users**: menyimpan data akun, termasuk nama, email, password (hash), dan role.
+2. **projects**: menyimpan informasi proyek dan `client_id` sebagai relasi ke `users.id`.
+3. **bids**: menyimpan penawaran dengan `project_id` yang mengarah ke `projects.id` dan `developer_id` yang mengarah ke `users.id`.
 
-php artisan boost:install
+Relasi Eloquent:
+
+- `User hasMany Project`, `Project belongsTo User` (klien).
+- `Project hasMany Bid`, `Bid belongsTo Project`.
+- `User hasMany Bid`, `Bid belongsTo User` (developer).
+
+Migration menerapkan *foreign key*, penghapusan berantai (*cascade delete*), dan aturan unik `project_id + developer_id` sehingga satu developer tidak dapat menawar dua kali pada proyek yang sama.
+
+## Menjalankan aplikasi secara lokal
+
+Pastikan PHP, Composer, dan MySQL/MariaDB aktif. Pada contoh ini terminal menggunakan PowerShell di Windows.
+
+1. Ambil source dan masuk ke folder proyek:
+
+   ```powershell
+   git clone https://github.com/DiegoPrac/garuda-hub-laravel.git
+   cd garuda-hub-laravel
+   composer install
+   ```
+
+2. Buat file konfigurasi lokal:
+
+   ```powershell
+   Copy-Item .env.example .env
+   php artisan key:generate
+   ```
+
+3. Buat database kosong melalui phpMyAdmin atau aplikasi database lokal. Kemudian ubah bagian koneksi pada `.env` sesuai pengaturan MySQL, contohnya:
+
+   ```dotenv
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=garuda-hub-laravel
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+   Contoh tersebut untuk **lingkungan lokal** dengan akun MySQL tanpa password; sesuaikan dengan sistem masing-masing.
+
+4. Jalankan migration:
+
+   ```powershell
+   php artisan config:clear
+   php artisan migrate
+   ```
+
+5. Jalankan server pengembangan:
+
+   ```powershell
+   php artisan serve
+   ```
+
+   Buka URL yang ditampilkan terminal. Jika menggunakan Laragon dengan virtual host, proyek juga dapat diakses melalui alamat `.test` yang dikonfigurasi Laragon.
+
+6. Registrasikan akun klien dan developer melalui aplikasi untuk mencoba alur lelang. Database dari source PHP Native **tidak harus diimpor**, karena tabel aplikasi Laravel dibuat melalui migration.
+
+## Alur pengujian manual
+
+1. Daftar dan masuk sebagai **klien**, lalu buat proyek baru.
+2. Pastikan proyek muncul dalam daftar dan dapat dilihat detailnya.
+3. Uji fitur edit proyek.
+4. Keluar, kemudian masuk sebagai **developer**.
+5. Buka detail proyek, kirim penawaran harga, durasi, dan proposal.
+6. Masuk kembali sebagai klien pemilik proyek, lihat penawaran yang masuk, kemudian pilih pemenang.
+7. Periksa bahwa penawaran pemenang bertanda **Terpilih** dan status proyek berubah menjadi **Ditutup**.
+8. Untuk memeriksa database, buka tabel `users`, `projects`, dan `bids` melalui phpMyAdmin.
+
+Pemeriksaan tambahan:
+
+```powershell
+php artisan route:list
+php artisan migrate:status
+php artisan test
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Perintah tes terakhir disediakan untuk pemeriksaan lokal; jangan menganggap semua pengujian otomatis berhasil sebelum benar-benar dijalankan.
 
-## Contributing
+## Catatan keamanan dan pengumpulan
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- File `.env` berisi konfigurasi rahasia dan **tidak boleh diunggah** ke GitHub.
+- Aplikasi ini digunakan untuk tugas dan demonstrasi **di komputer lokal**, belum dikonfigurasi untuk server produksi.
+- Riwayat pengembangan dicatat menggunakan Git melalui beberapa commit terpisah.
+- Untuk mengumpulkan tugas, gunakan URL repository ini, **bukan** URL `localhost` atau `.test`.
 
-## Code of Conduct
+## Referensi
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- [Source PHP Native — diksy/garudaHub](https://github.com/diksy/garudaHub)
+- [Dokumentasi Laravel](https://laravel.com/docs)
