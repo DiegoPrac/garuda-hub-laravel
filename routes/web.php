@@ -47,3 +47,13 @@ Route::post('/projects/{project}/bids',
     [BidController::class, 'store'])
     ->middleware('auth')
     ->name('bids.store');
+
+
+// Klien memilih pemenang penawaran
+Route::post(
+    '/projects/{project}/bids/{bid}/winner',
+    [BidController::class, 'selectWinner']
+)
+    ->middleware('auth')
+    ->name('bids.winner');
+

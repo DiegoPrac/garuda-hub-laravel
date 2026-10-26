@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Bid;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BidController extends Controller
 {
+    // Developer mengirim penawaran
     public function store(Request $request, Project $project)
     {
         // Hanya developer yang boleh memberikan penawaran
@@ -30,6 +32,14 @@ class BidController extends Controller
             return back()->with(
                 'error',
                 'Batas waktu lelang sudah berakhir.'
+            );
+        }
+
+        // Tidak boleh menawar jika pemenang sudah dipilih
+        if ($project->bids()->where('is_winner', true)->exists()) {
+            return back()->with(
+                'error',
+                'Pemenang proyek ini sudah ditentukan.'
             );
         }
 
@@ -64,5 +74,60 @@ class BidController extends Controller
         return redirect()
             ->route('projects.show', $project)
             ->with('success', 'Penawaran berhasil dikirim!');
+    }
+
+    // Klien memilih pemenang lelang
+    public function selectWinner(Project $project, Bid $bid)
+    {
+        // Hanya pemilik proyek yang boleh memilih pemenang
+        abort_unless(
+            auth()->user()?->role === 'klien' &&
+            (int) $project->client_id === (int) auth()->id(),
+            403,
+            'Anda tidak memiliki akses.'
+        );
+
+        // Pastikan penawaran berasal dari proyek yang benar
+        abort_unless(
+            (int) $bid->project_id === (int) $project->id,
+            404
+        );
+
+        // Gunakan transaksi untuk menjaga konsistensi data
+        DB::transaction(function () use ($project, $bid) {
+
+            $lockedProject = Project::query()
+                ->lockForUpdate()
+                ->findOrFail($project->id);
+
+            // Proyek harus masih terbuka
+            abort_unless(
+                $lockedProject->status === 'terbuka',
+                422,
+                'Proyek sudah tidak terbuka.'
+            );
+
+            // Pastikan belum ada pemenang sebelumnya
+            $sudahAdaPemenang = $lockedProject->bids()
+                ->where('is_winner', true)
+                ->exists();
+
+            abort_if(
+                $sudahAdaPemenang,
+                409,
+                'Pemenang proyek sudah dipilih.'
+            );
+
+            // Tandai developer yang dipilih sebagai pemenang
+            $lockedProject->bids()
+                ->whereKey($bid->id)
+                ->update([
+                    'is_winner' => true,
+                ]);
+        });
+
+        return redirect()
+            ->route('projects.show', $project)
+            ->with('success', 'Pemenang lelang berhasil dipilih!');
     }
 }

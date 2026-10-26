@@ -253,6 +253,33 @@
                 {{ $bid->is_winner ? 'Terpilih' : 'Belum dipilih' }}
             </p>
 
+
+{{-- Tombol memilih pemenang --}}
+@if($project->status === 'terbuka'
+    && !$project->bids->contains('is_winner', true))
+
+    <form action="{{ route('bids.winner', [$project, $bid]) }}"
+          method="POST"
+          onsubmit="return confirm('Yakin memilih developer ini sebagai pemenang?');">
+
+        @csrf
+
+        <button type="submit"
+                style="background:#16a34a;
+                       color:white;
+                       padding:10px 16px;
+                       border:none;
+                       border-radius:5px;
+                       cursor:pointer;">
+
+            Pilih Pemenang
+
+        </button>
+
+    </form>
+@endif
+
+
         </div>
     @empty
         <p>Belum ada penawaran untuk proyek ini.</p>
