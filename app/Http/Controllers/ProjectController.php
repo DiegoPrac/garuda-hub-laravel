@@ -47,12 +47,12 @@ class ProjectController extends Controller
     {
         $project->load('client');
 
-if (
-    auth()->user()->role === 'klien' &&
-    (int) $project->client_id === auth()->id()
-) {
-    $project->load('bids.developer');
-}
+        if (
+            auth()->user()->role === 'klien' &&
+            (int) $project->client_id === (int) auth()->id()
+        ) {
+            $project->load('bids.developer');
+        }
 
         return view('projects.show', compact('project'));
     }
