@@ -118,12 +118,16 @@ class BidController extends Controller
                 'Pemenang proyek sudah dipilih.'
             );
 
-            // Tandai developer yang dipilih sebagai pemenang
-            $lockedProject->bids()
-                ->whereKey($bid->id)
-                ->update([
-                    'is_winner' => true,
-                ]);
+// Tandai developer yang dipilih sebagai pemenang
+$lockedProject->bids()
+    ->whereKey($bid->id)
+    ->update([
+        'is_winner' => true,
+    ]);
+
+// Otomatis tutup lelang setelah pemenang dipilih
+$lockedProject->status = 'ditutup';
+$lockedProject->save();
         });
 
         return redirect()
