@@ -1,152 +1,57 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Daftar Proyek - GarudaHub</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
-            margin: 0;
-        }
-
-        .navbar {
-            background: #1e40af;
-            color: white;
-            padding: 20px 40px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-
-        h1 {
-            color: #1e40af;
-        }
-
-        .card {
-            background: white;
-            padding: 25px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px #00000010;
-        }
-
-        .btn {
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            margin-bottom: 20px;
-        }
-
-        .success {
-            background: #d1fae5;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .empty {
-            text-align: center;
-            color: #6b7280;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="navbar">
-    <strong>GarudaHub - Lelang Proyek IT</strong>
-</div>
-
-<div class="container">
-
-    <h1>Daftar Proyek</h1>
-
-    <p>
-        Temukan proyek IT yang tersedia
-        di GarudaHub.
-    </p>
-
-    <a href="{{ route('home') }}" class="btn">
-        Kembali ke Beranda
-    </a>
-
-    @if(auth()->user()->role === 'klien')
-        <a href="{{ route('projects.create') }}" class="btn">
-            + Tambah Proyek
-        </a>
+@extends('layout')
+@section('title', 'Daftar Proyek')
+@section('content')
+    <div class="page-heading">
+        <div>
+            <div class="eyebrow">Marketplace / Proyek IT</div>
+            <h1>Temukan peluang berikutnya.</h1>
+            <p>Daftar Proyek · Jelajahi kebutuhan digital dan mulai kolaborasi baru.</p>
+        </div>
+        @if(auth()->user()->role === 'klien')<a href="{{ route('projects.create') }}" class="btn">+ Tambah Proyek</a>@endif
+    </div>
+    <div class="card-top section-space">
+        <h2>Semua proyek <span class="badge">{{ $projects->total() }}</span>
+        </h2>
+        <p class="meta">Proyek terbaru ditampilkan lebih dulu</p>
+    </div>
+    <div class="cards">
+        @forelse($projects as $project)
+            <article class="card project-card">
+                <div class="card-top">
+                    <span class="badge">{{ $project->kategori }}</span>
+                    <span class="badge {{ $project->status === 'terbuka' && $project->batas_lelang->isFuture() ? 'open' : 'closed' }}">{{ $project->status === 'terbuka' && !$project->batas_lelang->isFuture() ? 'Lelang berakhir' : ucfirst($project->status) }}</span>
+                </div>
+                <h2>
+                    <a href="{{ route('projects.show', $project) }}">{{ $project->judul }}</a>
+                </h2>
+                <div class="meta">Oleh {{ $project->client?->nama ?? 'Tidak diketahui' }} @if($project->client_id === auth()->id()) · <strong>Proyek Anda</strong>@endif
+                </div>
+                <p class="description">{{ $project->deskripsi }}</p>
+                <p class="meta">Batas lelang · {{ $project->batas_lelang->format('d M Y') }} · 00.00</p>
+                <div class="card-bottom">
+                    <div>
+                        <small>Kisaran budget</small>
+                        <strong>Rp{{ number_format($project->budget_min, 0, ',', '.') }} – Rp{{ number_format($project->budget_max, 0, ',', '.') }}</strong>
+                    </div>
+                    <a class="btn secondary" href="{{ route('projects.show', $project) }}" aria-label="Lihat detail {{ $project->judul }}">Lihat Detail →</a>
+                </div>
+            </article>
+        @empty
+            <div class="card empty">
+                <div class="empty-symbol" aria-hidden="true">◇</div>
+                <h2>Belum Ada Proyek</h2>
+                <p>Saat ini belum ada proyek yang ditambahkan oleh klien.</p>@if(auth()->user()->role === 'klien')<a class="btn" href="{{ route('projects.create') }}">Buat proyek pertama</a>@else
+                    <p>Kunjungi kembali untuk menemukan peluang baru.</p>@endif
+            </div>
+        @endforelse
+    </div>
+    @if($projects->hasPages())
+        <nav class="pagination" aria-label="Halaman daftar proyek">
+            @if($projects->onFirstPage())<span class="disabled">← Sebelumnya</span>@else
+                <a class="btn secondary" href="{{ $projects->previousPageUrl() }}">← Sebelumnya</a>@endif
+            <span class="meta">Halaman {{ $projects->currentPage() }} dari {{ $projects->lastPage() }}</span>
+            @if($projects->hasMorePages())<a class="btn secondary" href="{{ $projects->nextPageUrl() }}">Berikutnya →</a>@else
+                <span class="disabled">Berikutnya →</span>@endif
+        </nav>
     @endif
-
-    @if(session('success'))
-        <div class="success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @forelse($projects as $project)
-
-        <div class="card">
-
-            <h2>{{ $project->judul }}</h2>
-
-            <p>
-                <strong>Klien:</strong>
-                {{ $project->client?->nama ?? 'Tidak diketahui' }}
-            </p>
-
-            <p>
-                <strong>Kategori:</strong>
-                {{ $project->kategori }}
-            </p>
-
-            <p>
-                <strong>Deskripsi:</strong>
-                {{ $project->deskripsi }}
-            </p>
-
-            <p>
-                <strong>Budget:</strong>
-                Rp{{ number_format($project->budget_min, 0, ',', '.') }}
-                -
-                Rp{{ number_format($project->budget_max, 0, ',', '.') }}
-            </p>
-
-            <p>
-                <strong>Status:</strong>
-                {{ ucfirst($project->status) }}
-            </p>
-
-<a href="{{ route('projects.show', $project) }}" class="btn">
-    Lihat Detail
-</a>
-
-        </div>
-
-    @empty
-
-        <div class="card empty">
-            <h3>Belum Ada Proyek</h3>
-
-            <p>
-                Saat ini belum ada proyek yang
-                ditambahkan oleh klien.
-            </p>
-        </div>
-
-    @endforelse
-
-    {{ $projects->links() }}
-
-</div>
-
-</body>
-</html>
+@endsection

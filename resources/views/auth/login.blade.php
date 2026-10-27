@@ -1,96 +1,43 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - GarudaHub</title>
+@extends('layout')
+@section('title', 'Login')
+@section('content')
+    <div class="auth-grid">
+        <aside class="auth-story">
+            <div class="eyebrow">Ide. Keahlian. Kolaborasi.</div>
+            <h2>Proyek hebat dimulai dari koneksi yang tepat.</h2>
+            <p>Temukan developer untuk ide Anda, atau bawa keahlian Anda ke proyek berikutnya.</p>
+            <p>01 &nbsp; Temukan peluang<br>02 &nbsp; Ajukan penawaran<br>03 &nbsp; Mulai kolaborasi</p>
+        </aside>
+        <section class="auth-form">
+            <div class="eyebrow">Workspace Anda</div>
+            <h1>Selamat datang kembali.</h1>
+            <p>Masuk ke akun Anda</p>
+            <form action="{{ route('login.attempt') }}" method="POST">
+                @csrf
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+                <label for="email">Email</label>
+                <input id="email" type="email" autocomplete="email" name="email"
+                value="{{ old('email') }}"
+                placeholder="Masukkan email" required>
 
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 350px;
-            max-width: 85%;
-            box-shadow: 0 4px 15px #00000015;
-        }
+                @error('email')
+                    <div class="error">{{ $message }}</div>
+                @enderror
 
-        h1 {
-            color: #1e40af;
-            text-align: center;
-        }
+                <label for="password">Password</label>
+                <input id="password" type="password" autocomplete="current-password" name="password"
+                placeholder="Masukkan password" required>
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0 15px;
-            box-sizing: border-box;
-        }
+                @error('password')
+                    <div class="error">{{ $message }}</div>
+                @enderror
 
-        button {
-            width: 100%;
-            padding: 12px;
-            color: white;
-            background: #2563eb;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .error {
-            color: red;
-            font-size: 14px;
-        }
-
-        p {
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h1>GarudaHub</h1>
-    <p>Masuk ke akun Anda</p>
-
-    <form action="{{ route('login.attempt') }}" method="POST">
-        @csrf
-
-        <label>Email</label>
-        <input type="email" name="email"
-               value="{{ old('email') }}"
-               placeholder="Masukkan email" required>
-
-        @error('email')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <label>Password</label>
-        <input type="password" name="password"
-               placeholder="Masukkan password" required>
-
-        @error('password')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <button type="submit">Login</button>
-    </form>
-
-    <p>
-        Belum punya akun?
-        <a href="{{ route('register') }}">Daftar sekarang</a>
-    </p>
-</div>
-
-</body>
-</html>
+                <button type="submit">Login</button>
+            </form>
+            <p>
+                Belum punya akun?
+                <a href="{{ route('register') }}">Daftar sekarang</a>
+            </p>
+        </section>
+    </div>
+@endsection

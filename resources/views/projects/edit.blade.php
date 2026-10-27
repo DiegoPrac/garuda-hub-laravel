@@ -1,154 +1,92 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Proyek - GarudaHub</title>
+@extends('layout')
+@section('title', 'Edit Proyek')
+@section('content')
+    <div class="breadcrumb">
+        <a href="{{ route('projects.index') }}">Jelajahi Proyek</a> / Edit proyek</div>
+    <div class="page-heading">
+        <div>
+            <div class="eyebrow">Workspace klien</div>
+            <h1>Sempurnakan detail proyek.</h1>
+            <p>Edit Proyek · Berikan informasi yang membantu developer memahami kebutuhan Anda.</p>
+        </div>
+    </div>
+    <div class="form-layout">
+        <section class="panel">
+            <form action="{{ route('projects.update', $project) }}"
+                method="POST">
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
-            margin: 0;
-        }
+                @csrf
+                @method('PUT')
 
-        .navbar {
-            background: #1e40af;
-            color: white;
-            padding: 20px 40px;
-        }
+                <label for="judul">Judul Proyek</label>
+                <input id="judul" type="text" name="judul"
+                value="{{ old('judul', $project->judul) }}"
+                required>
+                @error('judul')
+                    <div class="error">{{ $message }}</div>
+                @enderror
 
-        .container {
-            max-width: 650px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px #00000015;
-        }
+                <label for="deskripsi">Deskripsi Proyek</label>
+                <textarea id="deskripsi" name="deskripsi"
+                required>{{ old('deskripsi', $project->deskripsi) }}</textarea>
+                @error('deskripsi')
+                    <div class="error">{{ $message }}</div>
+                @enderror
 
-        h1 {
-            color: #1e40af;
-        }
+                <label for="kategori">Kategori</label>
+                <input id="kategori" type="text" name="kategori"
+                value="{{ old('kategori', $project->kategori) }}"
+                required>
+                @error('kategori')
+                    <div class="error">{{ $message }}</div>
+                @enderror
 
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
+                <label for="budget_min">Budget Minimal (Rp)</label>
+                <input id="budget_min" type="number" name="budget_min"
+                value="{{ old('budget_min', $project->budget_min) }}"
+                min="0" required>
+                @error('budget_min')
+                    <div class="error">{{ $message }}</div>
+                @enderror
 
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-family: Arial, sans-serif;
-        }
+                <label for="budget_max">Budget Maksimal (Rp)</label>
+                <input id="budget_max" type="number" name="budget_max"
+                value="{{ old('budget_max', $project->budget_max) }}"
+                min="0" required>
+                @error('budget_max')
+                    <div class="error">{{ $message }}</div>
+                @enderror
 
-        textarea {
-            min-height: 110px;
-        }
+                <label for="batas_lelang">Batas Lelang</label>
+                <input id="batas_lelang" type="date" name="batas_lelang"
+                value="{{ old('batas_lelang', \Illuminate\Support\Carbon::parse($project->batas_lelang)->format('Y-m-d')) }}"
+                min="{{ now()->toDateString() }}"
+                required>
+                @error('batas_lelang')
+                    <div class="error">{{ $message }}</div>
+                @enderror
 
-        button, .btn {
-            display: inline-block;
-            padding: 12px 18px;
-            margin-top: 20px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-        }
 
-        .btn {
-            background: #6b7280;
-        }
 
-        .error {
-            color: #dc2626;
-            font-size: 13px;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="navbar">
-    <strong>GarudaHub - Lelang Proyek IT</strong>
-</div>
-
-<div class="container">
-
-    <h1>Edit Proyek</h1>
-    <p>Ubah informasi proyek yang sudah dibuat.</p>
-
-    <form action="{{ route('projects.update', $project) }}"
-          method="POST">
-
-        @csrf
-        @method('PUT')
-
-        <label>Judul Proyek</label>
-        <input type="text" name="judul"
-               value="{{ old('judul', $project->judul) }}"
-               required>
-        @error('judul')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <label>Deskripsi Proyek</label>
-        <textarea name="deskripsi"
-                  required>{{ old('deskripsi', $project->deskripsi) }}</textarea>
-        @error('deskripsi')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <label>Kategori</label>
-        <input type="text" name="kategori"
-               value="{{ old('kategori', $project->kategori) }}"
-               required>
-        @error('kategori')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <label>Budget Minimal (Rp)</label>
-        <input type="number" name="budget_min"
-               value="{{ old('budget_min', $project->budget_min) }}"
-               min="0" required>
-        @error('budget_min')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <label>Budget Maksimal (Rp)</label>
-        <input type="number" name="budget_max"
-               value="{{ old('budget_max', $project->budget_max) }}"
-               min="0" required>
-        @error('budget_max')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <label>Batas Lelang</label>
-        <input type="date" name="batas_lelang"
-               value="{{ old('batas_lelang', \Illuminate\Support\Carbon::parse($project->batas_lelang)->format('Y-m-d')) }}"
-               min="{{ now()->toDateString() }}"
-               required>
-        @error('batas_lelang')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <br>
-
-        <button type="submit">Simpan Perubahan</button>
-
-        <a href="{{ route('projects.show', $project) }}"
-           class="btn">Batal</a>
-
-    </form>
-
-</div>
-
-</body>
-</html>
+                <div class="actions">
+                    <button type="submit">Simpan Perubahan</button>
+                    <a href="{{ route('projects.show', $project) }}"
+                        class="btn secondary">Batal</a>
+                </div>
+            </form>
+        </section>
+        <aside class="guide">
+            <div class="eyebrow">Panduan proyek</div>
+            <h2>Brief jelas, penawaran lebih tepat.</h2>
+            <p>
+                <strong>01 · Tentukan hasil</strong>
+                <br>Jelaskan fitur, tujuan, dan hasil akhir yang Anda harapkan.</p>
+            <p>
+                <strong>02 · Siapkan anggaran</strong>
+                <br>Isi kisaran budget sesuai lingkup pekerjaan.</p>
+            <p>
+                <strong>03 · Tetapkan batas lelang</strong>
+                <br>Penawaran ditutup saat memasuki tanggal yang dipilih (00.00 waktu aplikasi).</p>
+        </aside>
+    </div>
+@endsection
