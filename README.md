@@ -1,137 +1,225 @@
-# GarudaHub — Refactoring PHP Native ke Laravel
 
-Proyek praktikum **KST1407 Pemrograman Berbasis Web**. GarudaHub adalah aplikasi lelang proyek IT yang mempertemukan klien dan developer. Proyek ini dibuat dengan merancang ulang aplikasi PHP Native menjadi aplikasi **Laravel berbasis MVC** dan menggunakan **Eloquent ORM** untuk mengelola database.
+# GarudaHub - Platform Lelang Proyek IT
 
-- Pengembang: Diego Valentino Augusta
-- Program Studi: Teknologi Informasi, Universitas Jember
-- Referensi studi kasus: [garudaHub PHP Native oleh diksy](https://github.com/diksy/garudaHub)
+GarudaHub merupakan aplikasi berbasis web yang dikembangkan menggunakan Laravel untuk mempertemukan klien yang membutuhkan jasa pengembangan teknologi informasi dengan developer yang menawarkan keahlian mereka.
 
-## Fitur yang diimplementasikan
+Melalui GarudaHub, klien dapat membuat dan mengelola proyek, sedangkan developer dapat mengajukan penawaran berdasarkan harga, durasi pengerjaan, dan proposal. Klien kemudian dapat memilih developer sebagai pemenang lelang.
 
-- Registrasi, login, dan logout dengan peran **klien** serta **developer**.
-- Klien dapat menambahkan, melihat, mengubah, dan menghapus proyek miliknya.
-- Pengguna yang login dapat melihat daftar serta detail proyek.
-- Developer dapat mengirim penawaran berupa harga, durasi, dan proposal.
-- Setiap developer hanya dapat mengirim satu penawaran untuk proyek yang sama.
-- Klien dapat melihat penawaran yang masuk dan memilih pemenang.
-- Setelah pemenang dipilih, status proyek otomatis berubah menjadi **ditutup**.
-- Validasi formulir, pembatasan akses berdasarkan peran, CSRF protection, dan relasi database.
+Proyek ini dikembangkan sebagai bagian dari pembelajaran mata kuliah Pemrograman Web.
 
-**Catatan ruang lingkup:** Referensi PHP Native juga memiliki fitur pencarian proyek, dashboard per peran, dan panel admin. Fitur-fitur tersebut **belum direplikasi sepenuhnya** pada versi Laravel ini.
+## Fitur Utama
 
-## Teknologi
+### 1. Autentikasi Pengguna
+- Registrasi akun sebagai klien atau developer.
+- Login dan logout pengguna.
+- Password disimpan menggunakan hashing.
+- Pembatasan percobaan login.
+- Hak akses berdasarkan peran pengguna.
 
-- PHP 8.3 atau lebih baru
-- Laravel 13
-- MySQL / MariaDB
-- Eloquent ORM, Blade, dan Laravel Migration
-- Composer, Git, dan GitHub
-- Laragon untuk menjalankan aplikasi secara lokal (opsional)
+### 2. Manajemen Proyek
+- Klien dapat membuat proyek baru.
+- Klien dapat mengubah informasi proyek miliknya.
+- Klien dapat menghapus proyek miliknya.
+- Pengguna dapat melihat daftar dan detail proyek.
+- Informasi proyek meliputi judul, kategori, deskripsi, budget, batas lelang, dan status.
 
-## Struktur MVC
+### 3. Sistem Bidding
+- Developer dapat mengirim penawaran proyek.
+- Penawaran berisi harga, durasi pengerjaan, dan proposal.
+- Satu developer hanya dapat mengirim satu penawaran pada setiap proyek.
+- Penawaran hanya diterima selama proyek masih terbuka dan batas lelang belum berakhir.
+- Developer dapat melihat ringkasan dan status penawarannya.
 
-| Bagian | Lokasi | Fungsi |
-| --- | --- | --- |
-| Model | `app/Models/User.php`, `Project.php`, `Bid.php` | Relasi dan pengolahan data menggunakan Eloquent |
-| Controller | `app/Http/Controllers/` | Proses login, CRUD proyek, penawaran, dan pemilihan pemenang |
-| View | `resources/views/` | Tampilan halaman menggunakan Blade |
-| Routes | `routes/web.php` | Pemetaan URL ke controller |
-| Migration | `database/migrations/` | Membuat struktur dan relasi tabel database |
+### 4. Pemilihan Pemenang
+- Pemilik proyek dapat melihat daftar penawaran yang masuk.
+- Pemilik proyek dapat memilih penawaran sebagai pemenang.
+- Satu proyek hanya dapat memiliki satu pemenang melalui alur aplikasi.
+- Status proyek otomatis berubah menjadi ditutup setelah pemenang dipilih.
+- Proyek yang sudah ditutup tidak menerima penawaran baru.
 
-## Rancangan database
+### 5. Keamanan Aplikasi
+- Pembatasan akses menggunakan Laravel Policy.
+- Validasi data pada sisi server.
+- Perlindungan CSRF pada formulir.
+- Pembatasan akses berdasarkan kepemilikan proyek.
+- Transaksi database pada proses bidding dan pemilihan pemenang.
 
-Tiga tabel utama yang digunakan:
+### 6. Antarmuka Responsif
+- Tampilan halaman utama yang lebih modern.
+- Navigasi sesuai peran pengguna.
+- Dashboard klien dan developer.
+- Halaman daftar proyek dan detail proyek.
+- Formulir dengan tampilan responsif.
 
-1. **users**: menyimpan data akun, termasuk nama, email, password (hash), dan role.
-2. **projects**: menyimpan informasi proyek dan `client_id` sebagai relasi ke `users.id`.
-3. **bids**: menyimpan penawaran dengan `project_id` yang mengarah ke `projects.id` dan `developer_id` yang mengarah ke `users.id`.
+## Teknologi yang Digunakan
 
-Relasi Eloquent:
+| Teknologi | Kegunaan |
+|---|---|
+| PHP | Bahasa pemrograman backend |
+| Laravel 13 | Framework aplikasi web |
+| MySQL | Database utama aplikasi |
+| Eloquent ORM | Pengelolaan dan relasi database |
+| Blade | Template antarmuka Laravel |
+| HTML dan CSS | Struktur dan desain halaman |
+| Git dan GitHub | Version control |
+| Laragon | Lingkungan pengembangan lokal |
+| PHPUnit | Pengujian otomatis |
 
-- `User hasMany Project`, `Project belongsTo User` (klien).
-- `Project hasMany Bid`, `Bid belongsTo Project`.
-- `User hasMany Bid`, `Bid belongsTo User` (developer).
+## Struktur Proyek
 
-Migration menerapkan *foreign key*, penghapusan berantai (*cascade delete*), dan aturan unik `project_id + developer_id` sehingga satu developer tidak dapat menawar dua kali pada proyek yang sama.
+```text
+app/
+  Http/Controllers/
+    AuthController.php
+    ProjectController.php
+    BidController.php
+  Models/
+  Policies/
+    ProjectPolicy.php
 
-## Menjalankan aplikasi secara lokal
+database/
+  factories/
+  migrations/
 
-Pastikan PHP, Composer, dan MySQL/MariaDB aktif. Pada contoh ini terminal menggunakan PowerShell di Windows.
+public/
+  css/
+    garudahub.css
 
-1. Ambil source dan masuk ke folder proyek:
+resources/
+  views/
+    auth/
+    projects/
+    layout.blade.php
+    welcome.blade.php
 
-   ```powershell
-   git clone https://github.com/DiegoPrac/garuda-hub-laravel.git
-   cd garuda-hub-laravel
-   composer install
-   ```
+routes/
+  web.php
 
-2. Buat file konfigurasi lokal:
+tests/
+  Feature/
+    GarudaHubFlowTest.php
+    GarudaHubSecurityTest.php
+    GarudaHubRegressionTest.php
+    GarudaHubUiTest.php
+```
 
-   ```powershell
-   Copy-Item .env.example .env
-   php artisan key:generate
-   ```
+## Cara Instalasi
 
-3. Buat database kosong melalui phpMyAdmin atau aplikasi database lokal. Kemudian ubah bagian koneksi pada `.env` sesuai pengaturan MySQL, contohnya:
+### 1. Persiapan
 
-   ```dotenv
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=garuda-hub-laravel
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
+Pastikan komputer sudah memiliki:
+- PHP dan Composer
+- MySQL
+- Git
+- Laragon atau web server lokal lainnya
 
-   Contoh tersebut untuk **lingkungan lokal** dengan akun MySQL tanpa password; sesuaikan dengan sistem masing-masing.
+### 2. Clone Repository
 
-4. Jalankan migration:
+```bash
+git clone https://github.com/DiegoPrac/garuda-hub-laravel.git
+cd garuda-hub-laravel
+```
 
-   ```powershell
-   php artisan config:clear
-   php artisan migrate
-   ```
+### 3. Instal Dependensi
 
-5. Jalankan server pengembangan:
+```bash
+composer install
+```
 
-   ```powershell
-   php artisan serve
-   ```
+### 4. Konfigurasi Environment
 
-   Buka URL yang ditampilkan terminal. Jika menggunakan Laragon dengan virtual host, proyek juga dapat diakses melalui alamat `.test` yang dikonfigurasi Laragon.
+Salin file `.env.example` menjadi `.env`.
 
-6. Registrasikan akun klien dan developer melalui aplikasi untuk mencoba alur lelang. Database dari source PHP Native **tidak harus diimpor**, karena tabel aplikasi Laravel dibuat melalui migration.
-
-## Alur pengujian manual
-
-1. Daftar dan masuk sebagai **klien**, lalu buat proyek baru.
-2. Pastikan proyek muncul dalam daftar dan dapat dilihat detailnya.
-3. Uji fitur edit proyek.
-4. Keluar, kemudian masuk sebagai **developer**.
-5. Buka detail proyek, kirim penawaran harga, durasi, dan proposal.
-6. Masuk kembali sebagai klien pemilik proyek, lihat penawaran yang masuk, kemudian pilih pemenang.
-7. Periksa bahwa penawaran pemenang bertanda **Terpilih** dan status proyek berubah menjadi **Ditutup**.
-8. Untuk memeriksa database, buka tabel `users`, `projects`, dan `bids` melalui phpMyAdmin.
-
-Pemeriksaan tambahan:
+Untuk pengguna PowerShell:
 
 ```powershell
-php artisan route:list
-php artisan migrate:status
+Copy-Item .env.example .env
+```
+
+Sesuaikan pengaturan database di file `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=garuda-hub-laravel
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Pengaturan username, password, dan nama database harus disesuaikan dengan MySQL masing-masing.
+
+Buat database terlebih dahulu, lalu jalankan:
+
+```bash
+php artisan key:generate
+php artisan migrate
+```
+
+Perintah tersebut ditujukan untuk instalasi baru.
+
+### 5. Menjalankan Aplikasi
+
+```bash
+php artisan serve
+```
+
+Buka melalui browser:
+
+http://127.0.0.1:8000
+
+Jika menggunakan konfigurasi otomatis Laragon, aplikasi juga dapat diakses melalui domain lokal yang sesuai.
+
+## Alur Penggunaan
+
+1. Pengguna melakukan registrasi atau login.
+2. Klien membuat proyek beserta detail kebutuhannya.
+3. Developer melihat proyek yang tersedia.
+4. Developer mengirim penawaran harga, durasi, dan proposal.
+5. Klien melihat penawaran yang masuk.
+6. Klien memilih developer sebagai pemenang.
+7. Status proyek berubah menjadi ditutup.
+8. Developer dapat melihat hasil pemilihan pada detail proyek.
+
+## Pengujian Aplikasi
+
+Pengujian dilakukan menggunakan Laravel Artisan dan PHPUnit.
+
+Jalankan:
+
+```bash
 php artisan test
 ```
 
-Perintah tes terakhir disediakan untuk pemeriksaan lokal; jangan menganggap semua pengujian otomatis berhasil sebelum benar-benar dijalankan.
+Hasil pengujian terakhir:
 
-## Catatan keamanan dan pengumpulan
+| Pengujian | Hasil |
+|---|---|
+| Total tests | 32 passed |
+| Total assertions | 167 |
+| Failed tests | 0 |
 
-- File `.env` berisi konfigurasi rahasia dan **tidak boleh diunggah** ke GitHub.
-- Aplikasi ini digunakan untuk tugas dan demonstrasi **di komputer lokal**, belum dikonfigurasi untuk server produksi.
-- Riwayat pengembangan dicatat menggunakan Git melalui beberapa commit terpisah.
-- Untuk mengumpulkan tugas, gunakan URL repository ini, **bukan** URL `localhost` atau `.test`.
+Pengujian mencakup alur pengguna, keamanan, hak akses, bidding, pemilihan pemenang, dan tampilan aplikasi.
 
-## Referensi
+Pengujian otomatis menggunakan database SQLite untuk lingkungan testing. Pengujian konkurensi khusus MySQL belum dilakukan.
 
-- [Source PHP Native — diksy/garudaHub](https://github.com/diksy/garudaHub)
-- [Dokumentasi Laravel](https://laravel.com/docs)
+## Catatan
+
+- Repository ini berisi source code aplikasi Laravel.
+- Aplikasi memerlukan PHP dan database untuk dijalankan.
+- File `.env` tidak disertakan karena berisi konfigurasi lokal.
+- Aplikasi saat ini dikembangkan dan diuji pada lingkungan lokal.
+
+## Informasi Pengembang
+
+**Diego Valentino Augusta**
+
+Program Studi Teknologi Informasi  
+Fakultas Ilmu Komputer  
+Universitas Jember
+
+GitHub: [DiegoPrac](https://github.com/DiegoPrac)
+
+## Repository
+
+https://github.com/DiegoPrac/garuda-hub-laravel
