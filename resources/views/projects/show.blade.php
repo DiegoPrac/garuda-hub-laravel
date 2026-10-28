@@ -46,7 +46,7 @@
                     </a>
                     <form action="{{ route('projects.destroy', $project) }}"
                         method="POST"
-                        onsubmit="return confirm('Yakin ingin menghapus proyek ini?');">
+                        data-confirm="Yakin ingin menghapus proyek ini?"
 
                         @csrf
                         @method('DELETE')
@@ -183,7 +183,7 @@
 
                         <form action="{{ route('bids.winner', [$project, $bid]) }}"
                             method="POST"
-                            onsubmit="return confirm('Yakin memilih developer ini sebagai pemenang?');">
+                            data-confirm="Yakin memilih developer ini sebagai pemenang?"
 
                             @csrf
 

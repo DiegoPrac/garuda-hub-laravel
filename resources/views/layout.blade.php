@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>@yield('title', 'Workspace') · GarudaHub</title>
         <link rel="stylesheet" href="{{ asset('css/garudahub.css') }}">
+        <script src="{{ asset('js/confirm-actions.js') }}" defer></script>
     </head>
     <body>
         <a class="skip-link" href="#main">Lewati navigasi</a>
