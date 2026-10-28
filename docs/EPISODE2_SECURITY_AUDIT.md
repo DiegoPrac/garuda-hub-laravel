@@ -138,12 +138,25 @@ Temuan yang tersisa telah didokumentasikan untuk
 evaluasi lanjutan. Hasil pemindaian otomatis ini tidak
 menjamin bahwa aplikasi bebas dari seluruh kerentanan.
 
+
 ## 8. Bukti Pengujian
 
-Dokumentasi pengujian tersedia dalam laporan:
+Berikut dokumentasi hasil pengujian keamanan aplikasi
+GarudaHub menggunakan OWASP ZAP 2.17.0.
 
-- GarudaHub_Episode2_ZAP_Baseline.html
-- GarudaHub_Episode2_ZAP_AfterFix.html
+### Screenshot Bukti Pengujian
 
-Laporan mentah disimpan secara terpisah karena dapat
-memuat detail request, token, atau informasi sensitif.
+[Screenshot OWASP ZAP After Fix - Kelompok 5 - NIM 252410102108](https://drive.google.com/file/d/19j_TzZQTO9UpN_Jki1Wo_5F1eD8A-XuK/view?usp=sharing)
+
+Screenshot menampilkan hasil pemindaian OWASP ZAP
+dengan 0 temuan High, serta komentar identitas dan NIM
+pada kode aplikasi yang ditampilkan berdampingan.
+
+### Laporan Hasil Scanning
+
+- [Laporan OWASP ZAP - Before Fix (Baseline)](https://drive.google.com/file/d/1wksR5L7jp0bAIXtB6MghYtoMa_PIks56/view?usp=sharing)
+- [Laporan OWASP ZAP - After Fix](https://drive.google.com/file/d/1Wp512Z3DGqaITe3NMI_77jeVrIzgLKmV/view?usp=sharing)
+
+Laporan berisi hasil identifikasi kerentanan,
+tingkat risiko, dan perbandingan sebelum serta
+sesudah implementasi perbaikan keamanan.
