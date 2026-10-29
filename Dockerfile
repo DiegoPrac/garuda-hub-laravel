@@ -97,4 +97,5 @@ RUN mkdir -p \
 
 EXPOSE 10000
 
-CMD ["apache2-foreground"]
+
+CMD ["sh", "-c", "test -n \"$DB_MIGRATION_URL\" && DB_URL=\"$DB_MIGRATION_URL\" php artisan migrate --force && exec apache2-foreground"]
