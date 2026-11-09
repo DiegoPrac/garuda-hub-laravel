@@ -1,0 +1,24 @@
+.git
+.github
+
+# Jangan masukkan konfigurasi rahasia
+.env
+.env.*
+!.env.example
+
+# Dependency akan dipasang saat build
+node_modules
+vendor
+
+# File pengembangan dan dokumentasi
+tests
+docs
+
+# Database dan log lokal
+*.sql
+*.sqlite
+storage/logs/*
+storage/framework/cache/data/*
+
+# Asset frontend akan dibangun ulang
+public/build

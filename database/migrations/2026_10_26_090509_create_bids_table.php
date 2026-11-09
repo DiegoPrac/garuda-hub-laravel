@@ -38,9 +38,11 @@ return new class extends Migration
             $table->unique(['project_id', 'developer_id']);
         });
 
-        // CHECK constraint khusus database MySQL
-        // Dilewati ketika testing menggunakan SQLite
-        if (DB::getDriverName() === 'mysql') {
+// CHECK constraint untuk MySQL dan PostgreSQL.
+// SQLite tetap menggunakan validasi aplikasi.
+
+if (in_array(DB::getDriverName(), ['mysql', 'pgsql'], true)) {
+
             DB::statement(
                 'ALTER TABLE bids ADD CONSTRAINT chk_bids_nilai
                  CHECK (harga > 0 AND durasi > 0)'

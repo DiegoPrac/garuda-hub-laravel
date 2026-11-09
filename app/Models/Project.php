@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Project extends Model
 {
@@ -37,5 +38,11 @@ class Project extends Model
     public function bids(): HasMany
     {
         return $this->hasMany(Bid::class, 'project_id');
+    }
+
+    // Satu proyek hanya memiliki satu rating
+    public function rating(): HasOne
+    {
+        return $this->hasOne(Rating::class, 'project_id');
     }
 }
